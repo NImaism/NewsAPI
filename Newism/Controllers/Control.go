@@ -136,25 +136,6 @@ func CreateUser(e *gin.Context) {
 	e.JSON(http.StatusOK, Model.SuccessResponse("Done !"))
 }
 
-func UpdateProf(e *gin.Context) {
-	UpdateModel := new(Model.UpdateModel)
-	if err := e.Bind(UpdateModel); err != nil {
-		e.JSON(500, Model.ErrorResponse(err, "Error In Binding Data"))
-		return
-	}
-	Data, Err := Utility.ExtractTokenData(e)
-	if Err != nil {
-		e.JSON(500, Model.ErrorResponse(Err, "Error In Get Username From Token"))
-		return
-	}
-
-	Srv := Service.NewUService()
-	if err := Srv.UpdateUser(Data["UserName"], *UpdateModel); err != nil {
-		e.JSON(500, Model.ErrorResponse(err, "Error In Updating Doc"))
-		return
-	}
-	e.JSON(200, Model.SuccessResponse("Success"))
-}
 
 func GetNewsByTag(e *gin.Context) {
 	Data := new(Model.GetNewByTag)
