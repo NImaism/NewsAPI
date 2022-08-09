@@ -8,7 +8,6 @@ import (
 type UserService interface {
 	Login(UserName string, Password string) (bool, bool, error)
 	CreateUser(User Model.User) error
-	UpdateUser(UserName interface{}, User Model.UpdateModel) error
 }
 
 type userService struct {
@@ -26,9 +25,4 @@ func (userService) Login(UserName string, Password string) (bool, bool, error) {
 func (userService) CreateUser(user Model.User) error {
 	Server := Repository.URepository()
 	return Server.CreateUser(user)
-}
-
-func (userService) UpdateUser(UserName interface{}, user Model.UpdateModel) error {
-	Server := Repository.URepository()
-	return Server.UpdateUser(UserName, user)
 }
