@@ -17,20 +17,20 @@
 ## Routs
 
 #### News
-* CreatePost | [Link](http://localhost:8080/api/v1/CreatePost/) | POST
-* VerifyPost | Only Admin | [Link](http://localhost:8080/api/v1/VerifyPost/) | POST
-* LikePost   | [Link](http://localhost:8080/api/v1/LikePost/) | POST
-* ReportPost | [Link](http://localhost:8080/api/v1/ReportPost/) | POST
-* GetPostsByTag | [Link](http://localhost:8080/api/v1/GetPostsByTag/) | POST
-* DeletePost | [Link](http://localhost:8080/api/v1/DeletePost/) | DELETE
-* GetAllPost | [Link](http://localhost:8080/api/v1/GetAllPost/) | GET
-* GetPostForAdmin | Only Admin | [Link](http://localhost:8080/api/v1/GetPostForAdmin/) | GET
-* GetReports | Only Admin | [Link](http://localhost:8080/api/v1/GetReports/) | GET
-* GetLikes | [Link](http://localhost:8080/api/v1/GetLikes/) | GET
+* CreatePost | [Link](http://localhost:8080/api/v1/CreatePost/) | **POST**
+* VerifyPost | Only Admin | [Link](http://localhost:8080/api/v1/VerifyPost/) | **POST**
+* LikePost   | [Link](http://localhost:8080/api/v1/LikePost/) | **POST**
+* ReportPost | [Link](http://localhost:8080/api/v1/ReportPost/) | **POST**
+* GetPostsByTag | [Link](http://localhost:8080/api/v1/GetPostsByTag/) | **POST**
+* DeletePost | [Link](http://localhost:8080/api/v1/DeletePost/) | **DELETE**
+* GetAllPost | [Link](http://localhost:8080/api/v1/GetAllPost/) | **GET**
+* GetPostForAdmin | Only Admin | [Link](http://localhost:8080/api/v1/GetPostForAdmin/) | **GET**
+* GetReports | Only Admin | [Link](http://localhost:8080/api/v1/GetReports/) | **GET**
+* GetLikes | [Link](http://localhost:8080/api/v1/GetLikes/) | **GET**
 
 #### User
-* Login | [Link](http://localhost:8080/api/v1/LikePost/) | POST
-* Register | [Link](http://localhost:8080/account/v1/Register/) | POST
+* Login | [Link](http://localhost:8080/api/v1/LikePost/) | **POST**
+* Register | [Link](http://localhost:8080/account/v1/Register/) | **POST**
 
 
 ## Support
