@@ -10,7 +10,6 @@ import (
 type UserRepository interface {
 	Login(UserName string, Password string) (bool, bool, error)
 	CreateUser(user Model.User) error
-	UpdateUser(UserName interface{}, user Model.UpdateModel) error
 }
 
 type userRepository struct{}
@@ -42,11 +41,4 @@ func (userRepository) CreateUser(user Model.User) error {
 		return err
 	}
 	return nil
-}
-
-func (userRepository) UpdateUser(UserName interface{}, user Model.UpdateModel) error {
-	UserCol := database.GetCl(database.Data, "users")
-
-	_, err := UserCol.UpdateOne(context.TODO(), bson.D{{"UserName", UserName}}, bson.D{{"$set", user}})
-	return err
 }
