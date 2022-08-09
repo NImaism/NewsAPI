@@ -25,5 +25,4 @@ func SetRouting(e *gin.Engine) {
 
 	Account.POST("/Login/", Controllers.LoginUser)
 	Account.POST("/Register/", Controllers.CreateUser)
-	Account.POST("/UpdateProf/", Controllers.UpdateProf).Use(Middleware.JwtAuthMiddleware())
 }
