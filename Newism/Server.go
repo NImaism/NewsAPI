@@ -19,8 +19,8 @@ func main() {
 
 	// SET ROUTING
 	Routing.SetRouting(Server)
-	// LOAD FILE
-
+	
+	// RUN SERVER
 	if err := Server.Run(":8080"); err != nil {
 		log.Fatalln(err)
 	}
