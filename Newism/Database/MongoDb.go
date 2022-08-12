@@ -10,9 +10,10 @@ import (
 
 var Data *mongo.Client
 
-func Connect() {
-	ctx := context.TODO()
-
+func Connect() {	
+	ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+		
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatalln(err)
