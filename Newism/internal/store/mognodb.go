@@ -1,33 +1,24 @@
-package Repository
+package store
 
 import (
-	database "Newism/Database"
-	"Newism/Model"
+	"Newism/internal/database"
+	"Newism/internal/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type NewRepository interface {
-	GetNews(Limit int) ([]Model.New, error)
-	GetNewsByTag(Data Model.GetNewByTag) ([]Model.New, error)
-	CreateNew(User Model.New) (interface{}, error)
-	DeleteNew(Title string) error
-	Verfy(id string) error
-	LikePost(Data Model.LikePost) error
-	ShowPostForAdmins(Limit int) ([]Model.New, error)
-	ReportPost(Data Model.ReportPost) error
-	GetReports(Limit int) ([]Model.ReportPost, error)
-	GetLikes(Id string) ([]Model.LikePost, error)
+type Mognodb struct {
+	Mongo *database.Mongo
 }
 
-type newRepository struct{}
+func New(Database *database.Mongo) *Mognodb {
+	return &Mognodb{Database}
+}
 
-func NRepository() NewRepository { return newRepository{} }
-
-func (newRepository) GetNews(Limit int) ([]Model.New, error) {
-	newsCollection := database.GetCl(database.Data, "news")
+func (s *Mognodb) GetNews(Limit int) ([]model.New, error) {
+	newsCollection := s.Mongo.GetCl("news")
 
 	Ctx := context.TODO()
 
@@ -39,14 +30,14 @@ func (newRepository) GetNews(Limit int) ([]Model.New, error) {
 		return nil, err
 	}
 
-	var Result []Model.New
+	var Result []model.New
 	err = cursor.All(Ctx, &Result)
 
 	return Result, nil
 }
 
-func (newRepository) CreateNew(New Model.New) (interface{}, error) {
-	newsCollection := database.GetCl(database.Data, "news")
+func (s *Mognodb) CreateNew(New model.New) (interface{}, error) {
+	newsCollection := s.Mongo.GetCl("news")
 
 	result, err := newsCollection.InsertOne(context.TODO(), New)
 	if err != nil {
@@ -56,8 +47,8 @@ func (newRepository) CreateNew(New Model.New) (interface{}, error) {
 	return result.InsertedID, nil
 }
 
-func (newRepository) DeleteNew(Id string) error {
-	newsCollection := database.GetCl(database.Data, "news")
+func (s *Mognodb) DeleteNew(Id string) error {
+	newsCollection := s.Mongo.GetCl("news")
 
 	Object, Err := primitive.ObjectIDFromHex(Id)
 	if Err != nil {
@@ -72,8 +63,8 @@ func (newRepository) DeleteNew(Id string) error {
 	return nil
 }
 
-func (newRepository) GetNewsByTag(Data Model.GetNewByTag) ([]Model.New, error) {
-	NewsCol := database.GetCl(database.Data, "news")
+func (s *Mognodb) GetNewsByTag(Data model.GetNewByTag) ([]model.New, error) {
+	NewsCol := s.Mongo.GetCl("news")
 
 	Ctx := context.TODO()
 
@@ -85,7 +76,7 @@ func (newRepository) GetNewsByTag(Data Model.GetNewByTag) ([]Model.New, error) {
 		return nil, Err
 	}
 
-	var Result []Model.New
+	var Result []model.New
 
 	if err := Cr.All(Ctx, &Result); err != nil {
 		return nil, err
@@ -94,8 +85,8 @@ func (newRepository) GetNewsByTag(Data Model.GetNewByTag) ([]Model.New, error) {
 	return Result, nil
 }
 
-func (newRepository) Verfy(Id string) error {
-	NewCol := database.GetCl(database.Data, "news")
+func (s *Mognodb) VerifyPost(Id string) error {
+	NewCol := s.Mongo.GetCl("news")
 
 	Object, Err := primitive.ObjectIDFromHex(Id)
 	if Err != nil {
@@ -106,12 +97,12 @@ func (newRepository) Verfy(Id string) error {
 	return Err
 }
 
-func (newRepository) LikePost(Data Model.LikePost) error {
-	LikeCol := database.GetCl(database.Data, "likes")
+func (s *Mognodb) LikePost(Data model.LikePost) error {
+	LikeCol := s.Mongo.GetCl("likes")
 
 	Ctx := context.TODO()
 
-	var Result Model.LikePost
+	var Result model.LikePost
 
 	_ = LikeCol.FindOne(Ctx, bson.D{{"PostId", Data.PostId}, {"By", Data.By}}).Decode(&Result)
 
@@ -130,10 +121,10 @@ func (newRepository) LikePost(Data Model.LikePost) error {
 	return nil
 }
 
-func (newRepository) ShowPostForAdmins(Limit int) ([]Model.New, error) {
-	NewsCol := database.GetCl(database.Data, "news")
+func (s *Mognodb) GetNotPublicPosts(Limit int) ([]model.New, error) {
+	NewsCol := s.Mongo.GetCl("news")
 
-	var Results []Model.New
+	var Results []model.New
 
 	Ctx := context.TODO()
 
@@ -153,15 +144,15 @@ func (newRepository) ShowPostForAdmins(Limit int) ([]Model.New, error) {
 	return Results, nil
 }
 
-func (newRepository) ReportPost(Data Model.ReportPost) error {
-	ReportsCol := database.GetCl(database.Data, "reports")
+func (s *Mognodb) ReportPost(Data model.ReportPost) error {
+	ReportsCol := s.Mongo.GetCl("reports")
 	_, Err := ReportsCol.InsertOne(context.TODO(), Data)
 
 	return Err
 }
 
-func (newRepository) GetReports(Limit int) ([]Model.ReportPost, error) {
-	ReportsCol := database.GetCl(database.Data, "reports")
+func (s *Mognodb) GetReports(Limit int) ([]model.ReportPost, error) {
+	ReportsCol := s.Mongo.GetCl("reports")
 
 	Ctx := context.TODO()
 
@@ -173,7 +164,7 @@ func (newRepository) GetReports(Limit int) ([]Model.ReportPost, error) {
 		return nil, Err
 	}
 
-	var Results []Model.ReportPost
+	var Results []model.ReportPost
 
 	Err = Cr.All(Ctx, &Results)
 	if Err != nil {
@@ -183,8 +174,8 @@ func (newRepository) GetReports(Limit int) ([]Model.ReportPost, error) {
 	return Results, nil
 }
 
-func (newRepository) GetLikes(Id string) ([]Model.LikePost, error) {
-	LikeCol := database.GetCl(database.Data, "likes")
+func (s *Mognodb) GetLikes(Id string) ([]model.LikePost, error) {
+	LikeCol := s.Mongo.GetCl("likes")
 
 	Ctx := context.TODO()
 
@@ -193,11 +184,38 @@ func (newRepository) GetLikes(Id string) ([]Model.LikePost, error) {
 		return nil, Err
 	}
 
-	var Result []Model.LikePost
+	var Result []model.LikePost
 
 	if err := Cr.All(Ctx, &Result); err != nil {
 		return nil, err
 	}
 
 	return Result, nil
+}
+
+func (s *Mognodb) Login(UserName string, Password string) (bool, bool, error) {
+	usersCollection := s.Mongo.GetCl("users")
+
+	var Result model.User
+
+	err := usersCollection.FindOne(context.TODO(), bson.D{{"UserName", UserName}, {"Password", Password}}).Decode(&Result)
+	if err != nil {
+		return false, false, err
+	}
+
+	if Result.IsAdmin == 1 {
+		return true, true, nil
+	}
+
+	return true, false, nil
+}
+
+func (s *Mognodb) CreateUser(user model.User) error {
+	UserCol := s.Mongo.GetCl("users")
+
+	_, err := UserCol.InsertOne(context.TODO(), user)
+	if err != nil {
+		return err
+	}
+	return nil
 }

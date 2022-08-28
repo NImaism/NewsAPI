@@ -5,16 +5,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"time"
 	"log"
+	"time"
 )
 
-var Data *mongo.Client
+type Mongo struct {
+	Database *mongo.Client
+}
 
-func Connect() {	
+const Database = "newism"
+
+func New() *Mongo {
 	ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
 	defer done()
-		
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatalln(err)
@@ -24,11 +28,15 @@ func Connect() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	Data = client
+	return &Mongo{Database: client}
 }
 
-// Connect To Database Server
+func (m *Mongo) GetCl(name string) *mongo.Collection {
+	userCollection := m.Database.Database(Database).Collection(name)
+	return userCollection
+}
+
+// Connect To database Server
 //func Connect() {
 //	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://nimaism:pass@nimaism.ucoxrje.mongodb.net/?retryWrites=true&w=majority"))
 //	if err != nil {
@@ -45,8 +53,3 @@ func Connect() {
 //	}
 //	Data = client
 //}
-
-func GetCl(db *mongo.Client, name string) *mongo.Collection {
-	userCollection := db.Database("newism").Collection(name)
-	return userCollection
-}

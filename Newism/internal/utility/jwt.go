@@ -1,7 +1,7 @@
-package Utility
+package utility
 
 import (
-	"Newism/Model"
+	"Newism/internal/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -10,7 +10,7 @@ import (
 )
 
 func GenerateToken(UserName string, IsAdmin bool) (string, error) {
-	claims := &Model.JwtClaims{
+	claims := &model.JwtClaims{
 		UserName,
 		IsAdmin,
 		jwt.StandardClaims{

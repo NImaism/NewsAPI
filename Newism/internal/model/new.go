@@ -1,4 +1,4 @@
-package Model
+package model
 
 type New struct {
 	Id          string      `bson:"_id,omitempty"`
