@@ -4,9 +4,11 @@ import (
 	"Newism/internal/database"
 	"Newism/internal/model"
 	"context"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type Mognodb struct {
@@ -18,9 +20,10 @@ func New(Database *database.Mongo) *Mognodb {
 }
 
 func (s *Mognodb) GetNews(Limit int) ([]model.New, error) {
-	newsCollection := s.Mongo.GetCl("news")
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
-	Ctx := context.TODO()
+	newsCollection := s.Mongo.GetCl("news")
 
 	opt := options.Find()
 	opt.SetLimit(int64(Limit))
@@ -37,9 +40,12 @@ func (s *Mognodb) GetNews(Limit int) ([]model.New, error) {
 }
 
 func (s *Mognodb) CreateNew(New model.New) (interface{}, error) {
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
 	newsCollection := s.Mongo.GetCl("news")
 
-	result, err := newsCollection.InsertOne(context.TODO(), New)
+	result, err := newsCollection.InsertOne(Ctx, New)
 	if err != nil {
 		return 0, err
 	}
@@ -48,6 +54,9 @@ func (s *Mognodb) CreateNew(New model.New) (interface{}, error) {
 }
 
 func (s *Mognodb) DeleteNew(Id string) error {
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
 	newsCollection := s.Mongo.GetCl("news")
 
 	Object, Err := primitive.ObjectIDFromHex(Id)
@@ -55,7 +64,15 @@ func (s *Mognodb) DeleteNew(Id string) error {
 		return Err
 	}
 
-	_, err := newsCollection.DeleteOne(context.TODO(), bson.D{{"_id", Object}})
+	var Result model.New
+
+	_ = newsCollection.FindOne(Ctx, bson.D{{"_id", Object}}).Decode(&Result)
+
+	if Result.Id != Id {
+		return errors.New("Post NotFound")
+	}
+
+	_, err := newsCollection.DeleteOne(Ctx, bson.D{{"_id", Object}})
 	if err != nil {
 		return err
 	}
@@ -64,9 +81,10 @@ func (s *Mognodb) DeleteNew(Id string) error {
 }
 
 func (s *Mognodb) GetNewsByTag(Data model.GetNewByTag) ([]model.New, error) {
-	NewsCol := s.Mongo.GetCl("news")
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
-	Ctx := context.TODO()
+	NewsCol := s.Mongo.GetCl("news")
 
 	opt := options.Find()
 	opt.SetLimit(int64(Data.Limit))
@@ -86,6 +104,9 @@ func (s *Mognodb) GetNewsByTag(Data model.GetNewByTag) ([]model.New, error) {
 }
 
 func (s *Mognodb) VerifyPost(Id string) error {
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
 	NewCol := s.Mongo.GetCl("news")
 
 	Object, Err := primitive.ObjectIDFromHex(Id)
@@ -93,14 +114,23 @@ func (s *Mognodb) VerifyPost(Id string) error {
 		return Err
 	}
 
-	_, Err = NewCol.UpdateOne(context.TODO(), bson.D{{"_id", Object}}, bson.D{{"$set", bson.D{{"Public", 1}}}})
+	var Result model.New
+
+	_ = NewCol.FindOne(Ctx, bson.D{{"_id", Object}}).Decode(&Result)
+
+	if Result.Id != Id {
+		return errors.New("Post NotFound")
+	}
+
+	_, Err = NewCol.UpdateOne(Ctx, bson.D{{"_id", Object}}, bson.D{{"$set", bson.D{{"Public", 1}}}})
 	return Err
 }
 
 func (s *Mognodb) LikePost(Data model.LikePost) error {
-	LikeCol := s.Mongo.GetCl("likes")
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
-	Ctx := context.TODO()
+	LikeCol := s.Mongo.GetCl("likes")
 
 	var Result model.LikePost
 
@@ -122,11 +152,12 @@ func (s *Mognodb) LikePost(Data model.LikePost) error {
 }
 
 func (s *Mognodb) GetNotPublicPosts(Limit int) ([]model.New, error) {
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
 	NewsCol := s.Mongo.GetCl("news")
 
 	var Results []model.New
-
-	Ctx := context.TODO()
 
 	Opt := options.Find()
 	Opt.SetLimit(int64(Limit))
@@ -145,16 +176,26 @@ func (s *Mognodb) GetNotPublicPosts(Limit int) ([]model.New, error) {
 }
 
 func (s *Mognodb) ReportPost(Data model.ReportPost) error {
-	ReportsCol := s.Mongo.GetCl("reports")
-	_, Err := ReportsCol.InsertOne(context.TODO(), Data)
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
+	ReportsCol := s.Mongo.GetCl("reports")
+	var Result model.ReportPost
+
+	_ = ReportsCol.FindOne(Ctx, bson.D{{"PostId", Data.PostId}, {"By", Data.By}}).Decode(&Result)
+
+	if Result.By == Data.By {
+		return errors.New("You Have One Report For Post")
+	}
+	_, Err := ReportsCol.InsertOne(Ctx, Data)
 	return Err
 }
 
 func (s *Mognodb) GetReports(Limit int) ([]model.ReportPost, error) {
-	ReportsCol := s.Mongo.GetCl("reports")
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
-	Ctx := context.TODO()
+	ReportsCol := s.Mongo.GetCl("reports")
 
 	Opt := options.Find()
 	Opt.SetLimit(int64(Limit))
@@ -175,9 +216,10 @@ func (s *Mognodb) GetReports(Limit int) ([]model.ReportPost, error) {
 }
 
 func (s *Mognodb) GetLikes(Id string) ([]model.LikePost, error) {
-	LikeCol := s.Mongo.GetCl("likes")
+	Ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
 
-	Ctx := context.TODO()
+	LikeCol := s.Mongo.GetCl("likes")
 
 	Cr, Err := LikeCol.Find(Ctx, bson.D{{"PostId", Id}})
 	if Err != nil {
@@ -194,11 +236,14 @@ func (s *Mognodb) GetLikes(Id string) ([]model.LikePost, error) {
 }
 
 func (s *Mognodb) Login(UserName string, Password string) (bool, bool, error) {
+	ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
 	usersCollection := s.Mongo.GetCl("users")
 
 	var Result model.User
 
-	err := usersCollection.FindOne(context.TODO(), bson.D{{"UserName", UserName}, {"Password", Password}}).Decode(&Result)
+	err := usersCollection.FindOne(ctx, bson.D{{"UserName", UserName}, {"Password", Password}}).Decode(&Result)
 	if err != nil {
 		return false, false, err
 	}
@@ -211,9 +256,18 @@ func (s *Mognodb) Login(UserName string, Password string) (bool, bool, error) {
 }
 
 func (s *Mognodb) CreateUser(user model.User) error {
+	ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
+	defer done()
+
+	var Result model.User
+
 	UserCol := s.Mongo.GetCl("users")
 
-	_, err := UserCol.InsertOne(context.TODO(), user)
+	if Result.UserName == user.UserName {
+		return errors.New("one account is active with this username")
+	}
+
+	_, err := UserCol.InsertOne(ctx, user)
 	if err != nil {
 		return err
 	}

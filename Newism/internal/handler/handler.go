@@ -62,6 +62,12 @@ func (a *App) CrNew(e *gin.Context) {
 }
 
 func (a *App) DeletePost(e *gin.Context) {
+	if e.Query("id") == "" {
+		a.Logger.Info("handler.verifynew query has empty")
+		e.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	TokenData, Err := utility.ExtractTokenData(e)
 	if Err != nil {
 		a.Logger.Error("utility.extracttokendata Error In Extract Token Data")
@@ -76,6 +82,11 @@ func (a *App) DeletePost(e *gin.Context) {
 
 	err := a.Store.DeleteNew(e.Query("id"))
 	if err != nil {
+		if err.Error() == "Post NotFound" {
+			a.Logger.Info("store.deletenew failed", zap.Error(err))
+			e.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		a.Logger.Error("store.deletenew failed", zap.Error(err))
 		e.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -160,6 +171,11 @@ func (a *App) CreateUser(e *gin.Context) {
 
 	err = a.Store.CreateUser(*User)
 	if err != nil {
+		if err.Error() == "one account is active with this username" {
+			e.JSON(http.StatusOK, model.ErrorResponse(nil, "One Account Is Active With This UserName"))
+			e.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 		a.Logger.Error("store.createuser failed", zap.Error(err))
 		e.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -192,6 +208,12 @@ func (a *App) GetNewsByTag(e *gin.Context) {
 }
 
 func (a *App) VerifyNew(e *gin.Context) {
+	if e.Query("id") == "" {
+		a.Logger.Info("handler.verifynew query has empty")
+		e.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	TokenData, Err := utility.ExtractTokenData(e)
 	if Err != nil {
 		a.Logger.Error("utility.extracttokendata Error In Extract Token Data")
@@ -207,6 +229,11 @@ func (a *App) VerifyNew(e *gin.Context) {
 
 	err := a.Store.VerifyPost(e.Query("id"))
 	if err != nil {
+		if err.Error() == "Post NotFound" {
+			a.Logger.Info("store.verifypost failed", zap.Error(err))
+			e.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		a.Logger.Error("store.verifypost failed", zap.Error(err))
 		e.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -276,6 +303,11 @@ func (a *App) ReportPost(e *gin.Context) {
 	}
 
 	if err := a.Store.ReportPost(*Data); err != nil {
+		if err.Error() == "You Have One Report For Post" {
+			a.Logger.Info("store.reportpost one report active for post by user", zap.Error(err))
+			e.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 		a.Logger.Error("store.reportpost failed", zap.Error(err))
 		e.AbortWithStatus(http.StatusInternalServerError)
 		return
